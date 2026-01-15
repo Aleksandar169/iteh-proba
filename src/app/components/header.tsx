@@ -49,11 +49,7 @@ export default function Header() {
 
            
             <button
-              className="
-                px-6 py-2.5 rounded-xl
-                bg-orange-500 text-white font-semibold
-                hover:bg-orange-600 transition
-              "
+              className="px-6 py-2.5 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 transition"
             >
               Odjavi se
             </button>
