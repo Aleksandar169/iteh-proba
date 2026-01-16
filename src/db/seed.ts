@@ -18,7 +18,7 @@ async function seed() {
                     prezime: "Markovic",
                     email: "markovic@gmail.com",
                     sifra: hash,
-                    uloga: "administrator", // Morate navesti ulogu jer je notNull
+                    uloga: "administrator",
                 },
                 {
                     id: "7a0a1e00-9651-4071-86b8-ed32dba35bf3",
