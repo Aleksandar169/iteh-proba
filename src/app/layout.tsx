@@ -10,7 +10,7 @@ export default function RootLayout({
   return (
     <html lang="sr">
       <body className="min-h-screen bg-amber-50 text-gray-900 antialiased">
-        <Background/>
+        <Background />
         <Header />
 
         <main className="mx-auto max-w-7xl px-6 py-8">
@@ -20,4 +20,5 @@ export default function RootLayout({
     </html>
   );
 }
+
 

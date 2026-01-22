@@ -1,132 +1,3 @@
-// "use client";
-
-// import { useState, useEffect } from "react";
-// import AuthInput from "./AuthInput";
-// import AuthButton from "./AuthButton";
-// import { useRouter } from "next/navigation"; // Uvezi ruter za preusmeravanje
-
-// export default function AuthBox() {
-//     const router = useRouter();
-//     const [isRegister, setIsRegister] = useState(false);
-
-//     // State polja
-//     const [name, setName] = useState("");
-//     const [lastName, setLastName] = useState(""); // Novo polje
-//     const [email, setEmail] = useState("");
-//     const [password, setPassword] = useState("");
-//     const [confirmPassword, setConfirmPassword] = useState("");
-
-//     const [submitted, setSubmitted] = useState(false);
-
-//     async function handleSubmit(e: React.FormEvent) {
-//         e.preventDefault();
-//         setSubmitted(true);
-
-//         const payload = isRegister
-//             ? { ime: name, prezime: lastName, email, sifra: password, confirmPassword }
-//             : { email, sifra: password };
-
-//         try {
-//             const res = await fetch(isRegister ? "/api/auth/register" : "/api/auth/login", {
-//                 method: "POST",
-//                 headers: { "Content-Type": "application/json" },
-//                 body: JSON.stringify(payload),
-//             });
-
-//             // Rešavanje "Unexpected token <" greške proverom tipa odgovora
-//             const contentType = res.headers.get("content-type");
-//             if (!contentType || !contentType.includes("application/json")) {
-//                 throw new Error("Server nije vratio JSON. Proveri da li je ruta ispravna.");
-//             }
-
-//             const data = await res.json();
-
-//             if (!res.ok) {
-//                 alert("Greška: " + (data.error || "Neuspešna operacija"));
-//                 return;
-//             }
-
-//             alert(isRegister ? "Uspešna registracija!" : "Uspešan login!");
-
-//             // Umesto stavljanja komponente u funkciju, koristimo ruter
-//             router.push("/dashboard"); // ili gde god želiš da ode korisnik
-
-//         } catch (err) {
-//             console.error("FETCH ERROR:", err);
-//             alert("Greška: " + err);
-//         }
-//     }
-
-//     return (
-//         <div className="relative w-full max-w-md bg-white rounded-xl shadow-lg p-8 text-black">
-//             <div className="absolute -top-10 -right-10 text-7xl opacity-20">🐝</div>
-
-//             <h1 className="text-2xl font-bold text-center text-yellow-600 mb-6">
-//                 {isRegister ? "Registracija pčelara" : "Prijava na sistem"}
-//             </h1>
-
-//             <form onSubmit={handleSubmit} className="space-y-4">
-//                 {isRegister && (
-//                     <>
-//                         <AuthInput
-//                             label="Ime"
-//                             value={name}
-//                             onChange={setName}
-//                             className="text-black" // Osiguravamo crna slova
-//                         />
-//                         <AuthInput
-//                             label="Prezime"
-//                             value={lastName}
-//                             onChange={setLastName}
-//                             className="text-black"
-//                         />
-//                     </>
-//                 )}
-
-//                 <AuthInput
-//                     label="Email"
-//                     type="email"
-//                     value={email}
-//                     onChange={setEmail}
-//                     className="text-black"
-//                 />
-
-//                 <AuthInput
-//                     label="Lozinka"
-//                     type="password"
-//                     value={password}
-//                     onChange={setPassword}
-//                     className="text-black"
-//                 />
-
-//                 {isRegister && (
-//                     <AuthInput
-//                         label="Potvrdi lozinku"
-//                         type="password"
-//                         value={confirmPassword}
-//                         onChange={setConfirmPassword}
-//                         className="text-black"
-//                     />
-//                 )}
-
-//                 <AuthButton>
-//                     {isRegister ? "Registruj se" : "Prijavi se"}
-//                 </AuthButton>
-//             </form>
-
-//             <p className="text-center text-sm mt-4 text-gray-600">
-//                 {isRegister ? "Već imaš nalog?" : "Nemaš nalog?"}{" "}
-//                 <button
-//                     type="button"
-//                     onClick={() => setIsRegister(!isRegister)}
-//                     className="text-yellow-600 font-semibold hover:underline"
-//                 >
-//                     {isRegister ? "Prijava" : "Registracija"}
-//                 </button>
-//             </p>
-//         </div>
-//     );
-// }
 
 "use client";
 
@@ -149,7 +20,7 @@ export default function AuthBox() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
-        // Usklađivanje sa backendom: šaljemo "sifra" umesto "password"
+
         const payload = isRegister
             ? { ime: name, prezime: lastName, email, sifra: password, confirmPassword }
             : { email, password };
@@ -235,3 +106,4 @@ export default function AuthBox() {
         </div>
     );
 }
+
