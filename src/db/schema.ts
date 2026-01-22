@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, timestamp, mysqlEnum, MySqlVarBinary, boolean, decimal, int } from "drizzle-orm/mysql-core";
+import { mysqlTable, varchar, timestamp, mysqlEnum, MySqlVarBinary, boolean, decimal, int, datetime } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
 
 export const ulogeKorisnika = ["administrator", "pcelar", "poljoprivrednik"] as const;
@@ -27,8 +27,8 @@ export const pcelinjaci = mysqlTable("pcelinjaci", {
 // 3. IZVESTAJ (Povezuje Korisnika i Pčelinjak)
 export const izvestaji = mysqlTable("izvestaji", {
     id: varchar("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
-    datumOd: timestamp("datum_od").notNull(),
-    datumDo: timestamp("datum_do").notNull(),
+    datumOd: datetime("datum_od").notNull(),
+    datumDo: datetime("datum_do").notNull(),
     korisnikId: varchar("korisnik_id", { length: 36 }).references(() => users.id),
     pcelinjakId: varchar("pcelinjak_id", { length: 36 }).references(() => pcelinjaci.id),
 });

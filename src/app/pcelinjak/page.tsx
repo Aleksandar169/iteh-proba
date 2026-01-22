@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import ListaPcelinjaka, { PcelinjakItem } from "@/components/ListaPcelinjaka";
 import NewPcelinjak, { NewPcelinjakForm } from "@/components/NewPcelinjak";
+import PcelinjakSearch from "@/components/PcelinjakSearch";
 
 type ModalState =
   | { open: false }
@@ -10,28 +11,10 @@ type ModalState =
   | { open: true; mode: "edit"; editId: string };
 
 export default function Page() {
-  const initial = useMemo<PcelinjakItem[]>(
-    () => [
-      {
-        id: "1",
-        naziv: "Hergoleša",
-        geoSirina: 43.32,
-        geoDuzina: 21.89,
-        adresa: "Priboj",
-      },
-      {
-        id: "2",
-        naziv: "Uvac",
-        geoSirina: 43.4,
-        geoDuzina: 19.82,
-        adresa: "Nova Varoš",
-      },
-    ],
-    []
-  );
-
-  const [pcelinjaci, setPcelinjaci] = useState<PcelinjakItem[]>(initial);
+  const [pcelinjaci, setPcelinjaci] = useState<PcelinjakItem[]>([]);
   const [modal, setModal] = useState<ModalState>({ open: false });
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
 
   const openAdd = () => setModal({ open: true, mode: "add" });
   const openEdit = (id: string) => setModal({ open: true, mode: "edit", editId: id });
@@ -42,39 +25,103 @@ export default function Page() {
       ? pcelinjaci.find((p) => p.id === modal.editId)
       : undefined;
 
-  function handleSubmit(data: NewPcelinjakForm) {
+  async function loadPcelinjaci() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/pcelinjaci", { method: "GET" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Greška pri učitavanju pčelinjaka");
+
+      // osiguraj brojeve (DECIMAL iz MySQL često dođe kao string)
+      setPcelinjaci(
+        (data ?? []).map((p: any) => ({
+          ...p,
+          geoSirina: p.geoSirina == null ? null : Number(p.geoSirina),
+          geoDuzina: p.geoDuzina == null ? null : Number(p.geoDuzina),
+        }))
+      );
+    } catch (e) {
+      console.error(e);
+      alert(String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPcelinjaci();
+  }, []);
+
+  async function handleDelete(id: string) {
+  try {
+    const res = await fetch(`/api/pcelinjaci/${id}`, { method: "DELETE" });
+    const out = await res.json();
+    if (!res.ok) throw new Error(out?.error || "Neuspešno brisanje");
+
+    alert("Pčelinjak je obrisan (zajedno sa košnicama).");
+    await loadPcelinjaci();
+  } catch (e) {
+    console.error(e);
+    alert(String(e));
+  }
+}
+
+
+  async function handleSubmit(data: NewPcelinjakForm) {
     if (!modal.open) return;
 
-    if (modal.mode === "add") {
-      const newItem: PcelinjakItem = {
-        id: crypto.randomUUID(),
-        naziv: data.naziv.trim(),
-        geoSirina: Number(data.geoSirina),
-        geoDuzina: Number(data.geoDuzina),
-        adresa: data.adresa.trim(),
-      };
-      setPcelinjaci((prev) => [newItem, ...prev]);
-      close();
-      return;
-    }
+    try {
+      if (modal.mode === "add") {
+        const res = await fetch("/api/pcelinjaci", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            naziv: data.naziv.trim(),
+            geoSirina: data.geoSirina === "" ? null : Number(data.geoSirina),
+            geoDuzina: data.geoDuzina === "" ? null : Number(data.geoDuzina),
+            adresa: data.adresa.trim(),
+          }),
+        });
 
-    // edit
-    const id = modal.editId;
-    setPcelinjaci((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              naziv: data.naziv.trim(),
-              geoSirina: Number(data.geoSirina),
-              geoDuzina: Number(data.geoDuzina),
-              adresa: data.adresa.trim(),
-            }
-          : p
-      )
-    );
-    close();
+        const out = await res.json();
+        if (!res.ok) throw new Error(out?.error || "Neuspešno dodavanje");
+
+        close();
+        await loadPcelinjaci();
+        return;
+      }
+
+      const res = await fetch(`/api/pcelinjaci/${modal.editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          naziv: data.naziv.trim(),
+          geoSirina: data.geoSirina === "" ? null : Number(data.geoSirina),
+          geoDuzina: data.geoDuzina === "" ? null : Number(data.geoDuzina),
+          adresa: data.adresa.trim(),
+        }),
+      });
+
+      const out = await res.json();
+      if (!res.ok) throw new Error(out?.error || "Neuspešna izmena");
+
+      close();
+      await loadPcelinjaci();
+    } catch (e) {
+      console.error(e);
+      alert(String(e));
+    }
   }
+
+  const filtered = pcelinjaci.filter((p) => {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    (p.naziv ?? "").toLowerCase().includes(q) ||
+    (p.adresa ?? "").toLowerCase().includes(q)
+  );
+});
+
 
   return (
     <main
@@ -86,7 +133,6 @@ export default function Page() {
       }}
     >
       <div className="mx-auto max-w-4xl">
-        {/* Header */}
         <div className="mb-6 rounded-3xl border border-yellow-200/70 bg-white/70 p-6 shadow-sm backdrop-blur">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -108,10 +154,15 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Lista (veće kartice, jedna ispod druge) */}
-        <ListaPcelinjaka pcelinjaci={pcelinjaci} onEdit={openEdit} />
+        <PcelinjakSearch value={query} onChange={setQuery} />
 
-        {/* Modal */}
+        {loading ? (
+          <div className="rounded-2xl bg-white/70 p-6 text-gray-700">Učitavanje...</div>
+        ) : (
+          <ListaPcelinjaka pcelinjaci={filtered} onEdit={openEdit} onDelete={handleDelete} />
+
+        )}
+
         {modal.open && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40" onClick={close} />
@@ -133,9 +184,9 @@ export default function Page() {
                   modal.mode === "edit" && editItem
                     ? {
                         naziv: editItem.naziv,
-                        geoSirina: String(editItem.geoSirina),
-                        geoDuzina: String(editItem.geoDuzina),
-                        adresa: editItem.adresa,
+                        geoSirina: editItem.geoSirina == null ? "" : String(editItem.geoSirina),
+                        geoDuzina: editItem.geoDuzina == null ? "" : String(editItem.geoDuzina),
+                        adresa: editItem.adresa ?? "",
                       }
                     : undefined
                 }

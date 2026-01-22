@@ -5,9 +5,11 @@ import type { PcelinjakItem } from "./ListaPcelinjaka";
 export default function PcelinjakCard({
   p,
   onEdit,
+  onDelete,
 }: {
   p: PcelinjakItem;
   onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
   return (
     <div
@@ -34,16 +36,36 @@ export default function PcelinjakCard({
           </p>
         </div>
 
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onEdit?.(p.id);
-          }}
-          className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-800 shadow hover:bg-gray-50"
-        >
-          ✏️ Izmeni
-        </button>
+       <div className="flex items-center gap-2">
+  <button
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onEdit?.(p.id);
+    }}
+    className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-800 shadow hover:bg-gray-50"
+  >
+    ✏️ Izmeni
+  </button>
+
+  <button
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const ok = window.confirm(
+        `Da li sigurno želiš da obrišeš pčelinjak "${p.naziv}"?\n\nOva akcija će obrisati i sve košnice tog pčelinjaka.`
+      );
+
+      if (ok) onDelete?.(p.id);
+    }}
+    className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow hover:bg-red-50"
+    title="Obriši pčelinjak"
+  >
+    🗑️
+  </button>
+</div>
+
       </div>
 
       {/* Content */}
